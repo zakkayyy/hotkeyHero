@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Key Hero Trainer</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    canvas {
+      border: 2px solid #444;
+      background: #222;
+    }
+    #score {
+      margin-top: 10px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<div id="score">Score: 0 | Misses: 0</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const laneKeys = ['←', '↑', '↓', '→', '⏎', '⌫'];
+const keyMap = {
+  'ArrowLeft': '←',
+  'ArrowUp': '↑',
+  'ArrowDown': '↓',
+  'ArrowRight': '→',
+  'Enter': '⏎',
+  'Backspace': '⌫'
+};
+
+let notes = [];
+let score = 0;
+let misses = 0;
+let lastSpawnTime = 0;
+const spawnInterval = 666; // milliseconds between spawns
+const laneX = 180; // Single central lane
+
+function spawnNote() {
+  const symbol = laneKeys[Math.floor(Math.random() * laneKeys.length)];
+  notes.push({ symbol, y: 0 });
+}
+
+function drawNotes() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw hit zone
+  ctx.fillStyle = '#444';
+  ctx.fillRect(0, 550, 400, 5);
+
+  for (let note of notes) {
+    ctx.fillStyle = '#0f0';
+    ctx.font = '36px monospace';
+    ctx.fillText(note.symbol, laneX, note.y);
+    note.y += 1.2;
+  }
+}
+
+function updateScore() {
+  document.getElementById('score').innerText = `Score: ${score} | Misses: ${misses}`;
+}
+
+function gameLoop(timestamp) {
+  drawNotes();
+
+  // Remove missed notes
+  notes = notes.filter(note => {
+    if (note.y > 580) {
+      misses++;
+      updateScore();
+      return false;
+    }
+    return true;
+  });
+
+  if (timestamp - lastSpawnTime > spawnInterval) {
+    spawnNote();
+    lastSpawnTime = timestamp;
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+requestAnimationFrame(gameLoop);
+
+window.addEventListener('keydown', (e) => {
+  const key = e.key;
+  const symbol = keyMap[key];
+  if (!symbol || notes.length === 0) return;
+
+  for (let i = 0; i < notes.length; i++) {
+    const note = notes[i];
+    if (note.symbol === symbol && note.y >= 540 && note.y <= 570) {
+      notes.splice(i, 1);
+      score++;
+      updateScore();
+
+      // Visual feedback
+      ctx.fillStyle = '#0f0';
+      ctx.fillRect(laneX - 5, 545, 30, 10);
+      break;
+    }
+  }
+});
+</script>
+</body>
+</html>
