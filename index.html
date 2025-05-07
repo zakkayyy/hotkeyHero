@@ -101,27 +101,27 @@ window.addEventListener('keydown', (e) => {
   const symbol = keyMap[key];
   if (!symbol || notes.length === 0) return;
 
+  // Find the bottom-most (highest y) note that matches the symbol
+  let bottomIndex = -1;
+  let maxY = -Infinity;
+
   for (let i = 0; i < notes.length; i++) {
     const note = notes[i];
-
-    let isHighest = true;
-    for (let x of notes) {
-        if (note.y <= x.y) {
-            isHighest = false;
-            break;
-        }
+    if (note.symbol === symbol && note.y > maxY) {
+      maxY = note.y;
+      bottomIndex = i;
     }
-    
-    if (note.symbol === symbol && note.y <= 570 && isHighest) {
-      notes.splice(i, 1);
-      score++;
-      updateScore();
+  }
 
-      // Visual feedback
-      ctx.fillStyle = '#0f0';
-      ctx.fillRect(laneX - 5, 545, 30, 10);
-      break;
-    }
+  // If we found one, remove it
+  if (bottomIndex !== -1) {
+    notes.splice(bottomIndex, 1);
+    score++;
+    updateScore();
+
+    // Visual feedback
+    ctx.fillStyle = '#0f0';
+    ctx.fillRect(laneX - 5, 545, 30, 10);
   }
 });
 </script>
