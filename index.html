@@ -103,7 +103,16 @@ window.addEventListener('keydown', (e) => {
 
   for (let i = 0; i < notes.length; i++) {
     const note = notes[i];
-    if (note.symbol === symbol && note.y <= 570 && note.y > notes[i+1].y) {
+
+    let isHighest = true;
+    for (let x of notes) {
+        if (note.y <= x.y) {
+            isHighest = false;
+            break;
+        }
+    }
+    
+    if (note.symbol === symbol && note.y <= 570 && isHighest) {
       notes.splice(i, 1);
       score++;
       updateScore();
