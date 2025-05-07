@@ -103,7 +103,7 @@ window.addEventListener('keydown', (e) => {
 
   for (let i = 0; i < notes.length; i++) {
     const note = notes[i];
-    if (note.symbol === symbol && note.y >= 0 && note.y <= 570) {
+    if (note.symbol === symbol && note.y <= 570 && note.y < notes[i+1].y) {
       notes.splice(i, 1);
       score++;
       updateScore();
