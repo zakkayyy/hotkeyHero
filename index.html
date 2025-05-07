@@ -46,7 +46,7 @@ let notes = [];
 let score = 0;
 let misses = 0;
 let lastSpawnTime = 0;
-const spawnInterval = 666; // milliseconds between spawns
+const spawnInterval = 600; // milliseconds between spawns
 const laneX = 180; // Single central lane
 
 function spawnNote() {
@@ -63,7 +63,7 @@ function drawNotes() {
 
   for (let note of notes) {
     ctx.fillStyle = '#0f0';
-    ctx.font = '36px monospace';
+    ctx.font = '48px monospace';
     ctx.fillText(note.symbol, laneX, note.y);
     note.y += 1.2;
   }
