@@ -29,6 +29,7 @@
     }
     #difficultyLabel {
       margin-top: 10px;
+      font-size: 1em;
     }
   </style>
 </head>
@@ -36,8 +37,9 @@
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 <div id="score">Score: 0 | Misses: 0</div>
 
-<label id="difficultyLabel" for="difficultySlider">Difficulty: 1</label>
-<input type="range" id="difficultySlider" min="1" max="10" value="1">
+<!-- Difficulty Slider -->
+<input type="range" id="difficultySlider" min="50" max="500" value="200">
+<div id="difficultyLabel">Difficulty: 200ms</div>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -56,20 +58,16 @@ let notes = [];
 let score = 0;
 let misses = 0;
 let lastSpawnTime = 0;
-let spawnInterval = 200; // initial interval
+let spawnInterval = 200; // milliseconds between spawns (default value)
 const laneX = 180; // Single central lane
 
-// Spawn a new note
+// Function to spawn a new note
 function spawnNote() {
   const symbol = laneKeys[Math.floor(Math.random() * laneKeys.length)];
-  
-  // Add a random vertical offset based on current difficulty
-  const verticalOffset = Math.random() * 50 * (11 - spawnInterval / 20); // Adjust spawn stagger with difficulty
-  
-  notes.push({ symbol, y: verticalOffset });
+  notes.push({ symbol, y: 0 });
 }
 
-// Draw the notes on the canvas
+// Function to draw notes on the canvas
 function drawNotes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -85,12 +83,12 @@ function drawNotes() {
   }
 }
 
-// Update score display
+// Function to update the score display
 function updateScore() {
   document.getElementById('score').innerText = `Score: ${score} | Misses: ${misses}`;
 }
 
-// Game loop
+// Main game loop
 function gameLoop(timestamp) {
   drawNotes();
 
@@ -104,7 +102,7 @@ function gameLoop(timestamp) {
     return true;
   });
 
-  // Spawn a new note at regular intervals based on difficulty
+  // Spawn a new note at regular intervals
   if (timestamp - lastSpawnTime > spawnInterval) {
     spawnNote();
     lastSpawnTime = timestamp;
@@ -121,12 +119,13 @@ window.addEventListener('keydown', (e) => {
   const symbol = keyMap[key];
   if (!symbol || notes.length === 0) return;
 
-  // Get the bottom-most note
+  // Get the bottom-most note (regardless of symbol)
   let bottomNote = notes.reduce((maxNote, currentNote) =>
     currentNote.y > maxNote.y ? currentNote : maxNote, notes[0]);
 
   // Only clear if the symbol matches the bottom-most note
   if (bottomNote.symbol === symbol) {
+    // Remove the matched note
     const index = notes.indexOf(bottomNote);
     if (index !== -1) notes.splice(index, 1);
     score++;
@@ -138,16 +137,14 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Difficulty slider functionality
+// Difficulty Slider Logic
 const difficultySlider = document.getElementById('difficultySlider');
 const difficultyLabel = document.getElementById('difficultyLabel');
 
-difficultySlider.addEventListener('input', () => {
-  const difficulty = difficultySlider.value;
-  difficultyLabel.textContent = `Difficulty: ${difficulty}`;
-
-  // Adjust spawn interval based on difficulty (lower interval = faster spawn)
-  spawnInterval = 200 - (difficulty * 10); // Decrease interval as difficulty increases
+// Update spawn interval based on slider value
+difficultySlider.addEventListener('input', (e) => {
+  spawnInterval = e.target.value;
+  difficultyLabel.innerText = `Difficulty: ${spawnInterval}ms`;
 });
 </script>
 </body>
