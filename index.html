@@ -172,8 +172,8 @@ let notes = [];
 let score = 0;
 let misses = 0;
 let lastSpawnTime = 0;
-let spawnInterval = 200; // Initial spawn rate (ms)
-let symbolSpeed = 1.2;  // Initial symbol fall speed
+let spawnInterval = 500; // Initial spawn rate (ms)
+let symbolSpeed = 2.9;  // Initial symbol fall speed
 const laneX = 180; // Single central lane
 let isPaused = false; // Game pause state
 
@@ -256,11 +256,15 @@ window.addEventListener('keydown', (e) => {
 
 // Handle the sliders for spawn rate and symbol speed
 document.getElementById('spawnRateSlider').addEventListener('input', (e) => {
+  // Ensure only mouse input adjusts the slider value
+  e.preventDefault();
   spawnInterval = parseInt(e.target.value);
   document.getElementById('spawnRateValue').innerText = e.target.value;
 });
 
 document.getElementById('symbolSpeedSlider').addEventListener('input', (e) => {
+  // Ensure only mouse input adjusts the slider value
+  e.preventDefault();
   symbolSpeed = parseFloat(e.target.value);
   document.getElementById('symbolSpeedValue').innerText = e.target.value;
 });
