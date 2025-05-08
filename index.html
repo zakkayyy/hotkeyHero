@@ -7,44 +7,121 @@
     body {
       background: #111;
       color: #fff;
-      font-family: monospace;
+      font-family: 'Courier New', monospace;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      margin: 0;
       overflow: hidden;
+      font-size: 1.2em;
     }
+
     canvas {
       border: 2px solid #444;
       background: #222;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); /* Add a green glow effect */
+      margin-bottom: 20px;
     }
+
     #score {
       margin-top: 10px;
-      font-size: 1.2em;
+      font-size: 1.4em;
+      font-weight: bold;
+      text-shadow: 1px 1px 3px rgba(0, 255, 0, 0.7); /* Subtle text shadow */
     }
+
     .controls {
-      margin-top: 20px;
+      margin-top: 30px;
+      text-align: center;
     }
+
     .slider-label {
+      font-size: 1.1em;
       margin-right: 10px;
-      font-size: 1em;
+      color: #aaa;
     }
+
     .slider {
       margin: 10px;
+      width: 300px;
+      height: 10px;
+      background-color: #333;
+      border-radius: 5px;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: background-color 0.3s;
     }
+
+    .slider:focus {
+      background-color: #444;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background-color: #0f0;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+      background-color: #0d0;
+    }
+
+    .slider::-webkit-slider-runnable-track {
+      height: 10px;
+      border-radius: 5px;
+    }
+
+    .slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background-color: #0f0;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .slider::-moz-range-track {
+      height: 10px;
+      background-color: #333;
+      border-radius: 5px;
+    }
+
     #pauseButton {
       margin-top: 20px;
-      padding: 10px 20px;
+      padding: 12px 30px;
       background-color: #444;
       border: none;
       color: #fff;
-      font-size: 1.1em;
+      font-size: 1.2em;
+      font-weight: bold;
       cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s;
     }
+
     #pauseButton:hover {
       background-color: #666;
     }
+
+    #pauseButton:active {
+      background-color: #888;
+    }
+
+    #pauseButton:focus {
+      outline: none;
+    }
+
+    .slider-value {
+      font-size: 1.1em;
+      color: #fff;
+      margin-left: 10px;
+    }
+
   </style>
 </head>
 <body>
@@ -56,12 +133,12 @@
   <div>
     <span class="slider-label">Spawn Rate (ms):</span>
     <input type="range" id="spawnRateSlider" class="slider" min="50" max="1400" value="200" step="50">
-    <span id="spawnRateValue">200</span> ms
+    <span id="spawnRateValue" class="slider-value">200</span> ms
   </div>
   <div>
     <span class="slider-label">Symbol Speed:</span>
     <input type="range" id="symbolSpeedSlider" class="slider" min="0.5" max="3" value="1.2" step="0.1">
-    <span id="symbolSpeedValue">1.2</span>
+    <span id="symbolSpeedValue" class="slider-value">1.2</span>
   </div>
 </div>
 
@@ -104,6 +181,8 @@ function drawNotes() {
 
   for (let note of notes) {
     ctx.fillStyle = '#0f0';
+    ctx.shadowColor = 'rgba(0, 255, 0, 0.5)';
+    ctx.shadowBlur = 15; // Adding glow effect to the notes
     ctx.font = '48px monospace';
     ctx.fillText(note.symbol, laneX, note.y);
     note.y += symbolSpeed;  // Symbol speed based on the slider value
@@ -182,4 +261,3 @@ document.getElementById('pauseButton').addEventListener('click', () => {
 </script>
 </body>
 </html>
-    
