@@ -91,7 +91,7 @@
       border-radius: 5px;
     }
 
-    #pauseButton {
+    #pauseButton, #clearButton {
       margin-top: 20px;
       padding: 12px 30px;
       background-color: #444;
@@ -104,15 +104,15 @@
       transition: background-color 0.3s;
     }
 
-    #pauseButton:hover {
+    #pauseButton:hover, #clearButton:hover {
       background-color: #666;
     }
 
-    #pauseButton:active {
+    #pauseButton:active, #clearButton:active {
       background-color: #888;
     }
 
-    #pauseButton:focus {
+    #pauseButton:focus, #clearButton:focus {
       outline: none;
     }
 
@@ -142,8 +142,9 @@
   </div>
 </div>
 
-<!-- Pause Button -->
+<!-- Pause and Clear Buttons -->
 <button id="pauseButton">Pause</button>
+<button id="clearButton">Clear</button>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -257,6 +258,19 @@ document.getElementById('pauseButton').addEventListener('click', () => {
   isPaused = !isPaused;
   const buttonText = isPaused ? "Resume" : "Pause";
   document.getElementById('pauseButton').innerText = buttonText;
+
+  // If resumed, re-initiate the game loop
+  if (!isPaused) {
+    requestAnimationFrame(gameLoop);
+  }
+});
+
+// Clear the game when the "Clear" button is clicked
+document.getElementById('clearButton').addEventListener('click', () => {
+  notes = [];
+  score = 0;
+  misses = 0;
+  updateScore();
 });
 </script>
 </body>
