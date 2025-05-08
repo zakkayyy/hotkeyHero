@@ -23,24 +23,21 @@
       margin-top: 10px;
       font-size: 1.2em;
     }
-    #toggleButton {
+    #difficultySlider {
       margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #444;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      font-size: 1em;
+      width: 200px;
     }
-    #toggleButton:hover {
-      background-color: #555;
+    #difficultyLabel {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 <div id="score">Score: 0 | Misses: 0</div>
-<button id="toggleButton">Switch to Spawning on Clear</button>
+
+<label id="difficultyLabel" for="difficultySlider">Difficulty: 1</label>
+<input type="range" id="difficultySlider" min="1" max="10" value="1">
 
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -58,26 +55,21 @@ const keyMap = {
 let notes = [];
 let score = 0;
 let misses = 0;
-const laneX = 180; // Single central lane
-const bufferSize = 5; // Number of initial notes to spawn
 let lastSpawnTime = 0;
-const spawnInterval = 200; // Regular spawn interval in milliseconds
-let spawnMode = 'interval'; // Default mode is 'interval'
+let spawnInterval = 200; // initial interval
+const laneX = 180; // Single central lane
 
-// Function to spawn a new note
+// Spawn a new note
 function spawnNote() {
   const symbol = laneKeys[Math.floor(Math.random() * laneKeys.length)];
-  notes.push({ symbol, y: 0 });
+  
+  // Add a random vertical offset based on current difficulty
+  const verticalOffset = Math.random() * 50 * (11 - spawnInterval / 20); // Adjust spawn stagger with difficulty
+  
+  notes.push({ symbol, y: verticalOffset });
 }
 
-// Function to spawn the initial batch of notes
-function spawnInitialNotes() {
-  for (let i = 0; i < bufferSize; i++) {
-    spawnNote();
-  }
-}
-
-// Function to draw notes on the canvas
+// Draw the notes on the canvas
 function drawNotes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -93,12 +85,12 @@ function drawNotes() {
   }
 }
 
-// Function to update the score display
+// Update score display
 function updateScore() {
   document.getElementById('score').innerText = `Score: ${score} | Misses: ${misses}`;
 }
 
-// Main game loop
+// Game loop
 function gameLoop(timestamp) {
   drawNotes();
 
@@ -112,8 +104,8 @@ function gameLoop(timestamp) {
     return true;
   });
 
-  // Spawn a new note at regular intervals (if in 'interval' mode)
-  if (spawnMode === 'interval' && timestamp - lastSpawnTime > spawnInterval) {
+  // Spawn a new note at regular intervals based on difficulty
+  if (timestamp - lastSpawnTime > spawnInterval) {
     spawnNote();
     lastSpawnTime = timestamp;
   }
@@ -123,33 +115,22 @@ function gameLoop(timestamp) {
 
 requestAnimationFrame(gameLoop);
 
-// Spawn the initial batch of notes
-spawnInitialNotes();
-
 // Event listener for key presses
 window.addEventListener('keydown', (e) => {
   const key = e.key;
   const symbol = keyMap[key];
-  
-  // If there's no symbol or no notes, return
   if (!symbol || notes.length === 0) return;
 
-  // Get the bottom-most note (regardless of symbol)
+  // Get the bottom-most note
   let bottomNote = notes.reduce((maxNote, currentNote) =>
     currentNote.y > maxNote.y ? currentNote : maxNote, notes[0]);
 
   // Only clear if the symbol matches the bottom-most note
   if (bottomNote.symbol === symbol) {
-    // Remove the matched note
     const index = notes.indexOf(bottomNote);
     if (index !== -1) notes.splice(index, 1);
     score++;
     updateScore();
-
-    // Spawn a new note immediately after clearing one (if in 'clear' mode)
-    if (spawnMode === 'clear') {
-      spawnNote();
-    }
 
     // Visual feedback
     ctx.fillStyle = '#0f0';
@@ -157,16 +138,16 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Toggle mode functionality
-const toggleButton = document.getElementById('toggleButton');
-toggleButton.addEventListener('click', () => {
-  if (spawnMode === 'interval') {
-    spawnMode = 'clear';
-    toggleButton.innerText = 'Switch to Regular Interval Spawning';
-  } else {
-    spawnMode = 'interval';
-    toggleButton.innerText = 'Switch to Spawning on Clear';
-  }
+// Difficulty slider functionality
+const difficultySlider = document.getElementById('difficultySlider');
+const difficultyLabel = document.getElementById('difficultyLabel');
+
+difficultySlider.addEventListener('input', () => {
+  const difficulty = difficultySlider.value;
+  difficultyLabel.textContent = `Difficulty: ${difficulty}`;
+
+  // Adjust spawn interval based on difficulty (lower interval = faster spawn)
+  spawnInterval = 200 - (difficulty * 10); // Decrease interval as difficulty increases
 });
 </script>
 </body>
