@@ -23,11 +23,11 @@
       margin-top: 10px;
       font-size: 1.2em;
     }
-    #difficultySlider {
+    #difficultySlider, #speedSlider {
       margin-top: 20px;
       width: 200px;
     }
-    #difficultyLabel {
+    #difficultyLabel, #speedLabel {
       margin-top: 10px;
       font-size: 1em;
     }
@@ -39,7 +39,11 @@
 
 <!-- Difficulty Slider -->
 <input type="range" id="difficultySlider" min="50" max="500" value="200">
-<div id="difficultyLabel">Difficulty: 200ms</div>
+<div id="difficultyLabel">Difficulty (Spawn Interval): 200ms</div>
+
+<!-- Speed Slider -->
+<input type="range" id="speedSlider" min="1" max="5" value="1">
+<div id="speedLabel">Speed: 1x</div>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -59,6 +63,7 @@ let score = 0;
 let misses = 0;
 let lastSpawnTime = 0;
 let spawnInterval = 200; // milliseconds between spawns (default value)
+let speedFactor = 1; // Speed multiplier for note movement
 const laneX = 180; // Single central lane
 
 // Function to spawn a new note
@@ -77,9 +82,9 @@ function drawNotes() {
 
   for (let note of notes) {
     ctx.fillStyle = '#0f0';
-    ctx.font = '48px monospace';
+    ctx.font = '60px monospace';  // Increased font size for better visibility
     ctx.fillText(note.symbol, laneX, note.y);
-    note.y += 1.2;
+    note.y += 1.2 * speedFactor;  // Multiply by speedFactor for faster movement
   }
 }
 
@@ -137,14 +142,24 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Difficulty Slider Logic
+// Difficulty Slider Logic (for spawn interval)
 const difficultySlider = document.getElementById('difficultySlider');
 const difficultyLabel = document.getElementById('difficultyLabel');
 
 // Update spawn interval based on slider value
 difficultySlider.addEventListener('input', (e) => {
   spawnInterval = e.target.value;
-  difficultyLabel.innerText = `Difficulty: ${spawnInterval}ms`;
+  difficultyLabel.innerText = `Difficulty (Spawn Interval): ${spawnInterval}ms`;
+});
+
+// Speed Slider Logic (for speed of note movement)
+const speedSlider = document.getElementById('speedSlider');
+const speedLabel = document.getElementById('speedLabel');
+
+// Update speed factor based on slider value
+speedSlider.addEventListener('input', (e) => {
+  speedFactor = e.target.value;
+  speedLabel.innerText = `Speed: ${speedFactor}x`;
 });
 </script>
 </body>
