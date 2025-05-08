@@ -101,21 +101,15 @@ window.addEventListener('keydown', (e) => {
   const symbol = keyMap[key];
   if (!symbol || notes.length === 0) return;
 
-  // Find the bottom-most (highest y) note that matches the symbol
-  let bottomIndex = -1;
-  let maxY = -Infinity;
+  // Get the bottom-most note (regardless of symbol)
+  let bottomNote = notes.reduce((maxNote, currentNote) =>
+    currentNote.y > maxNote.y ? currentNote : maxNote, notes[0]);
 
-  for (let i = 0; i < notes.length; i++) {
-    const note = notes[i];
-    if (note.symbol === symbol && note.y > maxY) {
-      maxY = note.y;
-      bottomIndex = i;
-    }
-  }
-
-  // If we found one, remove it
-  if (bottomIndex !== -1) {
-    notes.splice(bottomIndex, 1);
+  // Only clear if the symbol matches the bottom-most note
+  if (bottomNote.symbol === symbol) {
+    // Remove the matched note
+    const index = notes.indexOf(bottomNote);
+    if (index !== -1) notes.splice(index, 1);
     score++;
     updateScore();
 
