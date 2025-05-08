@@ -33,6 +33,18 @@
     .slider {
       margin: 10px;
     }
+    #pauseButton {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #444;
+      border: none;
+      color: #fff;
+      font-size: 1.1em;
+      cursor: pointer;
+    }
+    #pauseButton:hover {
+      background-color: #666;
+    }
   </style>
 </head>
 <body>
@@ -52,6 +64,9 @@
     <span id="symbolSpeedValue">1.2</span>
   </div>
 </div>
+
+<!-- Pause Button -->
+<button id="pauseButton">Pause</button>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -73,6 +88,7 @@ let lastSpawnTime = 0;
 let spawnInterval = 200; // Initial spawn rate (ms)
 let symbolSpeed = 1.2;  // Initial symbol fall speed
 const laneX = 180; // Single central lane
+let isPaused = false; // Game pause state
 
 function spawnNote() {
   const symbol = laneKeys[Math.floor(Math.random() * laneKeys.length)];
@@ -99,6 +115,8 @@ function updateScore() {
 }
 
 function gameLoop(timestamp) {
+  if (isPaused) return; // Exit the game loop if paused
+
   drawNotes();
 
   // Remove missed notes
@@ -154,6 +172,14 @@ document.getElementById('symbolSpeedSlider').addEventListener('input', (e) => {
   symbolSpeed = parseFloat(e.target.value);
   document.getElementById('symbolSpeedValue').innerText = e.target.value;
 });
+
+// Toggle Pause/Resume on button click
+document.getElementById('pauseButton').addEventListener('click', () => {
+  isPaused = !isPaused;
+  const buttonText = isPaused ? "Resume" : "Pause";
+  document.getElementById('pauseButton').innerText = buttonText;
+});
 </script>
 </body>
 </html>
+    
