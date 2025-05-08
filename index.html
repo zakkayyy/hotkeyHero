@@ -237,9 +237,12 @@ window.addEventListener('keydown', (e) => {
   let bottomNote = notes.reduce((maxNote, currentNote) =>
     currentNote.y > maxNote.y ? currentNote : maxNote, notes[0]);
 
-  // Only clear if the symbol matches the bottom-most note
-  if (bottomNote.symbol === symbol) {
-    // Remove the matched note
+  // If the key does not match the bottom-most note, add a miss
+  if (bottomNote.symbol !== symbol) {
+    misses++;
+    updateScore();
+  } else {
+    // Only clear if the symbol matches the bottom-most note
     const index = notes.indexOf(bottomNote);
     if (index !== -1) notes.splice(index, 1);
     score++;
