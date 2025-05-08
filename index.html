@@ -23,11 +23,24 @@
       margin-top: 10px;
       font-size: 1.2em;
     }
+    #toggleButton {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #444;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    #toggleButton:hover {
+      background-color: #555;
+    }
   </style>
 </head>
 <body>
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 <div id="score">Score: 0 | Misses: 0</div>
+<button id="toggleButton">Switch to Spawning on Clear</button>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
@@ -45,15 +58,26 @@ const keyMap = {
 let notes = [];
 let score = 0;
 let misses = 0;
-let lastSpawnTime = 0;
-const spawnInterval = 300; // milliseconds between spawns
 const laneX = 180; // Single central lane
+const bufferSize = 5; // Number of initial notes to spawn
+let lastSpawnTime = 0;
+const spawnInterval = 200; // Regular spawn interval in milliseconds
+let spawnMode = 'interval'; // Default mode is 'interval'
 
+// Function to spawn a new note
 function spawnNote() {
   const symbol = laneKeys[Math.floor(Math.random() * laneKeys.length)];
   notes.push({ symbol, y: 0 });
 }
 
+// Function to spawn the initial batch of notes
+function spawnInitialNotes() {
+  for (let i = 0; i < bufferSize; i++) {
+    spawnNote();
+  }
+}
+
+// Function to draw notes on the canvas
 function drawNotes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -69,10 +93,12 @@ function drawNotes() {
   }
 }
 
+// Function to update the score display
 function updateScore() {
   document.getElementById('score').innerText = `Score: ${score} | Misses: ${misses}`;
 }
 
+// Main game loop
 function gameLoop(timestamp) {
   drawNotes();
 
@@ -86,7 +112,8 @@ function gameLoop(timestamp) {
     return true;
   });
 
-  if (timestamp - lastSpawnTime > spawnInterval) {
+  // Spawn a new note at regular intervals (if in 'interval' mode)
+  if (spawnMode === 'interval' && timestamp - lastSpawnTime > spawnInterval) {
     spawnNote();
     lastSpawnTime = timestamp;
   }
@@ -96,9 +123,15 @@ function gameLoop(timestamp) {
 
 requestAnimationFrame(gameLoop);
 
+// Spawn the initial batch of notes
+spawnInitialNotes();
+
+// Event listener for key presses
 window.addEventListener('keydown', (e) => {
   const key = e.key;
   const symbol = keyMap[key];
+  
+  // If there's no symbol or no notes, return
   if (!symbol || notes.length === 0) return;
 
   // Get the bottom-most note (regardless of symbol)
@@ -113,9 +146,26 @@ window.addEventListener('keydown', (e) => {
     score++;
     updateScore();
 
+    // Spawn a new note immediately after clearing one (if in 'clear' mode)
+    if (spawnMode === 'clear') {
+      spawnNote();
+    }
+
     // Visual feedback
     ctx.fillStyle = '#0f0';
     ctx.fillRect(laneX - 5, 545, 30, 10);
+  }
+});
+
+// Toggle mode functionality
+const toggleButton = document.getElementById('toggleButton');
+toggleButton.addEventListener('click', () => {
+  if (spawnMode === 'interval') {
+    spawnMode = 'clear';
+    toggleButton.innerText = 'Switch to Regular Interval Spawning';
+  } else {
+    spawnMode = 'interval';
+    toggleButton.innerText = 'Switch to Spawning on Clear';
   }
 });
 </script>
