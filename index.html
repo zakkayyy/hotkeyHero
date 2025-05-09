@@ -49,7 +49,13 @@
       height: 10px;
       background-color: #333;
       border-radius: 5px;
+      -webkit-appearance: none;
       appearance: none;
+      transition: background-color 0.3s;
+    }
+
+    .slider:focus {
+      background-color: #444;
     }
 
     .slider::-webkit-slider-thumb,
@@ -61,6 +67,12 @@
       cursor: pointer;
     }
 
+    .slider-value {
+      font-size: 1.1em;
+      color: #fff;
+      margin-left: 10px;
+    }
+
     .button-container {
       display: flex;
       justify-content: center;
@@ -68,7 +80,7 @@
       margin-top: 20px;
     }
 
-    button {
+    #pauseButton, #clearButton {
       padding: 12px 30px;
       background-color: #444;
       border: none;
@@ -80,275 +92,240 @@
       transition: background-color 0.3s;
     }
 
-    button:hover {
+    #pauseButton:hover, #clearButton:hover {
       background-color: #666;
     }
 
-    button:active {
+    #pauseButton:active, #clearButton:active {
       background-color: #888;
-    }
-
-    button:focus {
-      outline: none;
-    }
-
-    .slider-value {
-      font-size: 1.1em;
-      color: #fff;
-      margin-left: 10px;
     }
 
     #menuButton {
       position: absolute;
-      top: 15px;
-      right: 20px;
-      z-index: 2;
+      top: 10px;
+      right: 10px;
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 1em;
+      border-radius: 5px;
     }
 
-    #menuOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.95);
+    #menuPanel {
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      background-color: #222;
+      padding: 15px;
+      border: 2px solid #555;
+      border-radius: 5px;
       display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 40px;
-      z-index: 5;
-    }
-
-    #menuOverlay h2 {
-      color: #0f0;
-      margin-bottom: 20px;
-    }
-
-    #symbolMenu {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
-      gap: 10px;
-      max-width: 90%;
-      margin-bottom: 30px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .symbol-button {
+      background-color: #0f0;
+      color: #000;
+      margin: 5px;
       padding: 10px;
-      font-size: 1.2em;
-      background-color: #222;
-      border: 2px solid #0f0;
-      color: #0f0;
+      border: none;
       border-radius: 5px;
       cursor: pointer;
-      user-select: none;
-      text-align: center;
-      transition: 0.2s;
+      font-size: 1em;
+      font-weight: bold;
     }
 
     .symbol-button.inactive {
-      background-color: #111;
-      border-color: #555;
-      color: #555;
-    }
-
-    #closeMenu {
-      background-color: #0f0;
-      color: #000;
+      background-color: #444;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-<!-- Menu Button -->
-<button id="menuButton">Menu</button>
-
-<!-- Settings Menu Overlay -->
-<div id="menuOverlay">
-  <h2>Select Active Symbols</h2>
-  <div id="symbolMenu"></div>
-  <button id="closeMenu">Close Menu</button>
-</div>
-
-<canvas id="gameCanvas" width="400" height="600"></canvas>
-<div id="score">Score: 0 | Misses: 0</div>
-
-<div class="controls">
-  <div>
-    <span class="slider-label">Spawn Rate (ms):</span>
-    <input type="range" id="spawnRateSlider" class="slider" min="50" max="1400" value="500" step="50">
-    <span id="spawnRateValue" class="slider-value">500</span> ms
+  <button id="menuButton">Menu</button>
+  <div id="menuPanel">
+    <h3>Enable/Disable Symbols</h3>
+    <div id="symbolMenu"></div>
   </div>
-  <div>
-    <span class="slider-label">Symbol Speed:</span>
-    <input type="range" id="symbolSpeedSlider" class="slider" min="0.5" max="3" value="2.9" step="0.1">
-    <span id="symbolSpeedValue" class="slider-value">2.9</span>
+
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <div id="score">Score: 0 | Misses: 0</div>
+
+  <div class="controls">
+    <div>
+      <span class="slider-label">Spawn Rate (ms):</span>
+      <input type="range" id="spawnRateSlider" class="slider" min="50" max="1400" value="500" step="50">
+      <span id="spawnRateValue" class="slider-value">500</span> ms
+    </div>
+    <div>
+      <span class="slider-label">Symbol Speed:</span>
+      <input type="range" id="symbolSpeedSlider" class="slider" min="0.5" max="3" value="2.9" step="0.1">
+      <span id="symbolSpeedValue" class="slider-value">2.9</span>
+    </div>
   </div>
-</div>
 
-<div class="button-container">
-  <button id="pauseButton">Pause</button>
-  <button id="clearButton">Clear</button>
-</div>
+  <div class="button-container">
+    <button id="pauseButton">Pause</button>
+    <button id="clearButton">Clear</button>
+  </div>
 
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
 
-const keyMap = {
-  'ArrowLeft': '←',
-  'ArrowUp': '↑',
-  'ArrowDown': '↓',
-  'ArrowRight': '→',
-  'Enter': '⏎',
-  'Backspace': '⌫',
-  ' ': '␣'
-};
+    const keyMap = {
+      'ArrowLeft': '←',
+      'ArrowUp': '↑',
+      'ArrowDown': '↓',
+      'ArrowRight': '→',
+      'Enter': '⏎',
+      'Backspace': '⌫',
+      ' ': '␣'
+    };
 
-// List of all keys to show in menu (A–Z, 0–9, arrows, special)
-const laneKeys = [
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-  ...'0123456789',
-  '←', '↑', '↓', '→', '⏎', '⌫', '␣'
-];
+    const additionalKeys = [];
+    for (let i = 65; i <= 90; i++) additionalKeys.push(String.fromCharCode(i)); // A–Z
+    for (let i = 0; i <= 9; i++) additionalKeys.push(i.toString()); // 0–9
+    additionalKeys.push('␣'); // Space symbol
 
-let notes = [];
-let score = 0;
-let misses = 0;
-let lastSpawnTime = 0;
-let spawnInterval = 500;
-let symbolSpeed = 2.9;
-let isPaused = false;
-let menuOpen = false;
-let activeSymbols = new Set(laneKeys);
-const laneX = 180;
+    const laneKeys = ['←', '↑', '↓', '→', '⏎', '⌫', ...additionalKeys];
+    const defaultSymbols = ['←', '↑', '↓', '→', '⏎', '⌫'];
+    let activeSymbols = new Set(defaultSymbols);
 
-function spawnNote() {
-  const activeArray = Array.from(activeSymbols);
-  if (activeArray.length === 0) return;
-  const symbol = activeArray[Math.floor(Math.random() * activeArray.length)];
-  notes.push({ symbol, y: 0 });
-}
+    let notes = [];
+    let score = 0;
+    let misses = 0;
+    let lastSpawnTime = 0;
+    let spawnInterval = 500;
+    let symbolSpeed = 2.9;
+    let isPaused = false;
+    const laneX = 180;
 
-function drawNotes() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#444';
-  ctx.fillRect(0, 550, 400, 5);
+    function spawnNote() {
+      const symbols = Array.from(activeSymbols);
+      if (symbols.length === 0) return;
+      const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+      notes.push({ symbol, y: 0 });
+    }
 
-  for (let note of notes) {
-    ctx.fillStyle = '#0f0';
-    ctx.shadowColor = 'rgba(0, 255, 0, 0.5)';
-    ctx.shadowBlur = 15;
-    ctx.font = '48px monospace';
-    ctx.fillText(note.symbol, laneX, note.y);
-    note.y += symbolSpeed;
-  }
-}
+    function drawNotes() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#444';
+      ctx.fillRect(0, 550, 400, 5);
 
-function updateScore() {
-  document.getElementById('score').innerText = `Score: ${score} | Misses: ${misses}`;
-}
+      for (let note of notes) {
+        ctx.fillStyle = '#0f0';
+        ctx.shadowColor = 'rgba(0, 255, 0, 0.5)';
+        ctx.shadowBlur = 15;
+        ctx.font = '48px monospace';
+        ctx.fillText(note.symbol, laneX, note.y);
+        note.y += symbolSpeed;
+      }
+    }
 
-function gameLoop(timestamp) {
-  if (isPaused || menuOpen) return;
-  drawNotes();
-  notes = notes.filter(note => {
-    if (note.y > 580) {
-      misses++;
+    function updateScore() {
+      document.getElementById('score').innerText = `Score: ${score} | Misses: ${misses}`;
+    }
+
+    function gameLoop(timestamp) {
+      if (isPaused) return;
+      drawNotes();
+
+      notes = notes.filter(note => {
+        if (note.y > 580) {
+          misses++;
+          updateScore();
+          return false;
+        }
+        return true;
+      });
+
+      if (timestamp - lastSpawnTime > spawnInterval) {
+        spawnNote();
+        lastSpawnTime = timestamp;
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+
+    window.addEventListener('keydown', (e) => {
+      const key = e.key;
+      const symbol = keyMap[key] || key.toUpperCase();
+
+      if (!activeSymbols.has(symbol) || notes.length === 0) return;
+
+      let bottomNote = notes.reduce((maxNote, currentNote) =>
+        currentNote.y > maxNote.y ? currentNote : maxNote, notes[0]);
+
+      if (bottomNote.symbol !== symbol) {
+        misses++;
+        updateScore();
+      } else {
+        const index = notes.indexOf(bottomNote);
+        if (index !== -1) notes.splice(index, 1);
+        score++;
+        updateScore();
+
+        ctx.fillStyle = '#0f0';
+        ctx.fillRect(laneX - 5, 545, 30, 10);
+      }
+    });
+
+    document.getElementById('spawnRateSlider').addEventListener('input', (e) => {
+      spawnInterval = parseInt(e.target.value);
+      document.getElementById('spawnRateValue').innerText = e.target.value;
+    });
+
+    document.getElementById('symbolSpeedSlider').addEventListener('input', (e) => {
+      symbolSpeed = parseFloat(e.target.value);
+      document.getElementById('symbolSpeedValue').innerText = e.target.value;
+    });
+
+    document.getElementById('pauseButton').addEventListener('click', () => {
+      isPaused = !isPaused;
+      document.getElementById('pauseButton').innerText = isPaused ? "Resume" : "Pause";
+      if (!isPaused) requestAnimationFrame(gameLoop);
+    });
+
+    document.getElementById('clearButton').addEventListener('click', () => {
+      notes = [];
+      score = 0;
+      misses = 0;
       updateScore();
-      return false;
-    }
-    return true;
-  });
+    });
 
-  if (timestamp - lastSpawnTime > spawnInterval) {
-    spawnNote();
-    lastSpawnTime = timestamp;
-  }
+    // Menu toggle
+    const menuButton = document.getElementById('menuButton');
+    const menuPanel = document.getElementById('menuPanel');
+    menuButton.addEventListener('click', () => {
+      menuPanel.style.display = menuPanel.style.display === 'none' ? 'block' : 'none';
+    });
 
-  requestAnimationFrame(gameLoop);
-}
+    // Populate menu
+    const symbolMenu = document.getElementById('symbolMenu');
+    laneKeys.forEach(symbol => {
+      const btn = document.createElement('button');
+      btn.innerText = symbol;
+      btn.className = 'symbol-button';
+      if (!activeSymbols.has(symbol)) btn.classList.add('inactive');
 
-requestAnimationFrame(gameLoop);
+      btn.addEventListener('click', () => {
+        if (activeSymbols.has(symbol)) {
+          activeSymbols.delete(symbol);
+          btn.classList.add('inactive');
+        } else {
+          activeSymbols.add(symbol);
+          btn.classList.remove('inactive');
+        }
+      });
 
-window.addEventListener('keydown', (e) => {
-  if (menuOpen) return;
-
-  let key = e.key.toUpperCase();
-  if (key === ' ') key = '␣';
-  if (keyMap[e.key]) key = keyMap[e.key];
-
-  if (!activeSymbols.has(key) || notes.length === 0) return;
-
-  let bottomNote = notes.reduce((maxNote, currentNote) =>
-    currentNote.y > maxNote.y ? currentNote : maxNote, notes[0]);
-
-  if (bottomNote.symbol !== key) {
-    misses++;
-    updateScore();
-  } else {
-    const index = notes.indexOf(bottomNote);
-    if (index !== -1) notes.splice(index, 1);
-    score++;
-    updateScore();
-    ctx.fillStyle = '#0f0';
-    ctx.fillRect(laneX - 5, 545, 30, 10);
-  }
-});
-
-// Sliders
-document.getElementById('spawnRateSlider').addEventListener('input', (e) => {
-  spawnInterval = parseInt(e.target.value);
-  document.getElementById('spawnRateValue').innerText = e.target.value;
-});
-
-document.getElementById('symbolSpeedSlider').addEventListener('input', (e) => {
-  symbolSpeed = parseFloat(e.target.value);
-  document.getElementById('symbolSpeedValue').innerText = e.target.value;
-});
-
-// Pause / Clear
-document.getElementById('pauseButton').addEventListener('click', () => {
-  isPaused = !isPaused;
-  document.getElementById('pauseButton').innerText = isPaused ? "Resume" : "Pause";
-  if (!isPaused) requestAnimationFrame(gameLoop);
-});
-
-document.getElementById('clearButton').addEventListener('click', () => {
-  notes = [];
-  score = 0;
-  misses = 0;
-  updateScore();
-});
-
-// Menu toggle
-document.getElementById('menuButton').addEventListener('click', () => {
-  menuOpen = true;
-  document.getElementById('menuOverlay').style.display = 'flex';
-});
-
-document.getElementById('closeMenu').addEventListener('click', () => {
-  menuOpen = false;
-  document.getElementById('menuOverlay').style.display = 'none';
-  requestAnimationFrame(gameLoop);
-});
-
-// Populate menu
-const symbolMenu = document.getElementById('symbolMenu');
-laneKeys.forEach(symbol => {
-  const btn = document.createElement('button');
-  btn.innerText = symbol;
-  btn.className = 'symbol-button';
-  btn.addEventListener('click', () => {
-    if (activeSymbols.has(symbol)) {
-      activeSymbols.delete(symbol);
-      btn.classList.add('inactive');
-    } else {
-      activeSymbols.add(symbol);
-      btn.classList.remove('inactive');
-    }
-  });
-  symbolMenu.appendChild(btn);
-});
-</script>
+      symbolMenu.appendChild(btn);
+    });
+  </script>
 </body>
 </html>
