@@ -293,7 +293,7 @@
 
     document.getElementById('symbolSpeedSlider').addEventListener('input', (e) => {
       symbolSpeed = parseFloat(e.target.value);
-      document.getElementById('symbolSpeedValue').innerText = e.target.value;
+      document.getElementById('symbolSpeedValue').innerText = parseFloat(e.target.value).toFixed(1);
     });
 
     document.getElementById('pauseButton').addEventListener('click', () => {
