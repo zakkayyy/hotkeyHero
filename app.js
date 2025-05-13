@@ -26,7 +26,7 @@ let score = 0;
 let misses = 0;
 let lastSpawnTime = 0;
 let spawnInterval = 500;
-let symbolSpeed = 2.9;
+let symbolSpeed = 2.0;
 let isPaused = false;
 const laneX = 180;
 
